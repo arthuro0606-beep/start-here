@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Start Here">
+<meta name="theme-color" content="#0e0e0d">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Start Here</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap');
+
+:root {
+  --bg: #0e0e0d;
+  --surface: #181816;
+  --border: rgba(255,255,255,0.07);
+  --text: #e8e6df;
+  --muted: #6b6963;
+  --accent: #c8b87a;
+  --accent-dim: rgba(200,184,122,0.10);
+  --green: #3a7a5a;
+  --green-bright: #4a9a6a;
+  --mono: 'DM Mono', 'Courier New', monospace;
+  --serif: 'Playfair Display', Georgia, serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  overscroll-behavior: none;
+}
+
+.app {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  padding: env(safe-area-inset-top, 48px) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 24px) env(safe-area-inset-left, 0);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── VIEWS ── */
+.view { display: none; flex-direction: column; flex: 1; padding: 0 24px; }
+.view.active { display: flex; }
+
+/* ── NAV TABS ── */
+.tabs {
+  display: flex;
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.tab {
+  flex: 1; padding: 14px 0; text-align: center;
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; background: none; border: none;
+  font-family: var(--mono); transition: color 0.15s;
+}
+.tab.active { color: var(--accent); }
+
+/* ── HOME VIEW ── */
+.home-top { padding-top: 36px; margin-bottom: 28px; }
+.accent-bar-wrap { display: flex; align-items: flex-start; gap: 16px; }
+.accent-bar { width: 4px; border-radius: 2px; background: var(--accent); align-self: stretch; flex-shrink: 0; }
+.title-block .big { font-family: var(--serif); font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -1px; color: var(--text); }
+.title-block .big.gold { color: var(--accent); }
+.week-line { font-size: 11px; color: var(--muted); margin-top: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.quote-wrap { border-left: 2px solid var(--accent); padding-left: 14px; margin-bottom: 28px; }
+.quote-text { font-family: var(--serif); font-size: 16px; font-weight: 700; line-height: 1.5; color: var(--text); }
+.quote-src { font-size: 10px; color: var(--muted); margin-top: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.section-lbl { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
+
+.habit-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; }
+.habit-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-user-select: none; user-select: none;
+}
+.habit-row.done { background: rgba(58,122,90,0.10); border-color: rgba(58,122,90,0.28); }
+.check {
+  width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+  border: 1px solid var(--muted); background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.habit-row.done .check { background: var(--green); border-color: var(--green); }
+.check svg { display: none; }
+.habit-row.done .check svg { display: block; }
+.habit-name { font-size: 13px; color: var(--text); flex: 1; transition: color 0.15s; }
+.habit-row.done .habit-name { color: var(--muted); text-decoration: line-through; }
+.habit-cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+.prog-wrap { margin-bottom: 32px; }
+.prog-row { display: flex; align-items: center; gap: 12px; }
+.prog-bg { flex: 1; height: 2px; background: rgba(255,255,255,0.06); border-radius: 1px; }
+.prog-fill { height: 2px; background: var(--accent); border-radius: 1px; transition: width 0.4s; }
+.prog-label { font-size: 12px; color: var(--accent); min-width: 30px; text-align: right; }
+
+.mantra-wrap { padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 24px; }
+.mantra-text { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.5; }
+.mantra-lbl { font-size: 10px; color: var(--muted); margin-top: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ── TRACKER VIEW ── */
+.tracker-top { padding-top: 28px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+.tracker-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); }
+.tracker-week { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 3px; }
+
+.week-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: none; }
+.week-nav::-webkit-scrollbar { display: none; }
+.wbtn {
+  flex-shrink: 0; padding: 5px 11px; border-radius: 6px; font-size: 11px;
+  font-family: var(--mono); border: 1px solid var(--border); background: transparent;
+  color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.wbtn.active { background: var(--accent); border-color: var(--accent); color: #0e0e0d; font-weight: 500; }
+
+.cat-block { margin-bottom: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.cat-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; }
+.cat-dot-lg { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.cat-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; letter-spacing: 0.04em; text-transform: uppercase; }
+.cat-pct { font-size: 11px; color: var(--muted); }
+.cat-bar-bg { height: 2px; background: rgba(255,255,255,0.05); }
+.cat-bar-fill { height: 2px; transition: width 0.3s; }
+.cat-habits { padding: 8px 14px 12px; display: flex; flex-direction: column; gap: 5px; }
+.trk-habit-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+.trk-habit-label { font-size: 12px; color: var(--text); flex: 1; }
+.trk-freq { font-size: 10px; color: var(--muted); margin-right: 6px; }
+.days-row { display: flex; gap: 3px; }
+.dbox {
+  width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--border);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 8px; color: var(--muted); transition: background 0.1s, border-color 0.1s;
+}
+.dbox.on { border-color: transparent; }
+.dbox:active { opacity: 0.7; }
+.divider { height: 1px; background: var(--border); margin: 3px 0; }
+
+/* ── GOALS VIEW ── */
+.goals-top { padding-top: 28px; margin-bottom: 20px; }
+.goals-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); }
+.goal-cat { margin-bottom: 18px; }
+.goal-cat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.goal-cat-name { font-size: 11px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+.goal-items { display: flex; flex-direction: column; gap: 5px; }
+.goal-item { font-size: 13px; color: var(--text); padding: 9px 13px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="view active" id="view-home"></div>
+  <div class="view" id="view-tracker"></div>
+  <div class="view" id="view-goals"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="showView('home',this)">Today</button>
+    <button class="tab" onclick="showView('tracker',this)">Tracker</button>
+    <button class="tab" onclick="showView('goals',this)">Goals</button>
+  </div>
+</div>
+
+<script>
+const START = new Date(2026,2,30);
+const NWEEKS = 20;
+const CHALLENGE_START = new Date(2026,3,5);
+const CHALLENGE_END   = new Date(2026,6,4);
+function getDayNum(){
+  const diff = Math.floor((new Date()-CHALLENGE_START)/(24*3600*1000))+1;
+  return Math.max(1,Math.min(90,diff));
+}
+function getDaysLeft(){
+  const diff = Math.ceil((CHALLENGE_END-new Date())/(24*3600*1000));
+  return Math.max(0,diff);
+}
+function getChallengePct(){
+  return Math.round(Math.min(getDayNum()/90*100,100));
+}
+
+const CATS = [
+  {key:'health',      label:'Health',       color:'#1D9E75', habits:[
+    {key:'swim_bike',   label:'Swim or bike',        freq:2},
+    {key:'gym',         label:'Gym',                  freq:2},
+    {key:'calisthenics',label:'Calisthenics',         freq:2},
+    {key:'stretch',     label:'Stretch / posture',    freq:7},
+    {key:'eat',         label:'Eat well + IF 16h',    freq:7},
+    {key:'meditate',    label:'Meditation',            freq:7},
+    {key:'journal',     label:'Journaling',            freq:7},
+    {key:'skin',        label:'No skin picking',       freq:7},
+  ]},
+  {key:'independence', label:'Independence', color:'#378ADD', habits:[
+    {key:'licence',     label:'Study for licence',    freq:7},
+    {key:'job',         label:'Send CV / job search', freq:3},
+  ]},
+  {key:'school',      label:'School',       color:'#7F77DD', habits:[
+    {key:'psych',       label:'Psychology',            freq:5},
+    {key:'philo',       label:'Philosophy',            freq:5},
+    {key:'physics',     label:'Physics',               freq:5},
+    {key:'read',        label:'Reading',               freq:4},
+  ]},
+  {key:'connection',  label:'Connection',   color:'#D4537E', habits:[
+    {key:'social',      label:'Be in a group',         freq:3},
+    {key:'love',        label:'Quality time / love',   freq:4},
+    {key:'art',         label:'Make art',              freq:3},
+  ]},
+  {key:'hobbies',     label:'Hobbies',      color:'#EF9F27', habits:[
+    {key:'drums',       label:'Drums',                 freq:4},
+    {key:'guitar',      label:'Guitar',                freq:4},
+  ]},
+  {key:'skills',      label:'Skills',       color:'#639922', habits:[
+    {key:'cook',        label:'Cooking',               freq:3},
+    {key:'craft',       label:'Crafting / sewing',     freq:2},
+    {key:'bio',         label:'Practical biology',     freq:2},
+  ]},
+  {key:'stimulation', label:'Stimulation',  color:'#888780', habits:[
+    {key:'weed',        label:'Weed (≤2×)',            freq:2},
+    {key:'alcohol',     label:'Alcohol (≤1×)',         freq:1},
+    {key:'mast',        label:'Masturbation (≤1×)',    freq:1},
+    {key:'dumbphone',   label:'Dumbphone mode',        freq:7},
+  ]},
+  {key:'mental',      label:'Mental health',color:'#AFA9EC', habits:[
+    {key:'ocd',         label:'OCD work',              freq:5},
+    {key:'ai',          label:'Limit AI use',          freq:7},
+    {key:'social2',     label:'One social initiative', freq:3},
+    {key:'motiv',       label:'Motivation check-in',   freq:7},
+  ]},
+  {key:'direction',   label:'Direction',    color:'#D85A30', habits:[
+    {key:'plan',        label:'Plan before acting',    freq:7},
+    {key:'econ',        label:'Responsible spending',  freq:7},
+    {key:'step',        label:'One step forward',      freq:5},
+  ]},
+];
+
+const DAILY_HABITS = [
+  {key:'meditate',    label:'Meditation',         cat:'health',       color:'#1D9E75'},
+  {key:'stretch',     label:'Stretch / posture',  cat:'health',       color:'#1D9E75'},
+  {key:'eat',         label:'Eat well + IF 16h',  cat:'health',       color:'#1D9E75'},
+  {key:'licence',     label:'Study for licence',  cat:'independence', color:'#378ADD'},
+  {key:'plan',        label:'Plan before acting', cat:'direction',    color:'#D85A30'},
+  {key:'skin',        label:'No skin picking',    cat:'mental',       color:'#AFA9EC'},
+  {key:'ai',          label:'Limit AI use',       cat:'mental',       color:'#AFA9EC'},
+  {key:'journal',     label:'Journaling',         cat:'health',       color:'#1D9E75'},
+  {key:'motiv',       label:'Motivation check-in',cat:'mental',       color:'#AFA9EC'},
+];
+
+const GOALS = [
+  {cat:'Health',       color:'#1D9E75', items:['Swim + bike 2×/week','Gym 2×/week','Calisthenics 2×/week','Daily stretch & posture','Eat healthier + IF 16h','Daily meditation','Daily journaling','Reduce skin picking']},
+  {cat:'Independence', color:'#378ADD', items:['Study for licence every day','Find a summer job — keep sending CVs']},
+  {cat:'School',       color:'#7F77DD', items:['Study psychology, philosophy, physics','Read books (pleasure included)']},
+  {cat:'Connection',   color:'#D4537E', items:['Belong in groups','Build in love','Make art regularly']},
+  {cat:'Hobbies',      color:'#EF9F27', items:['Drums 3–5×/week','Guitar 3–5×/week']},
+  {cat:'Skills',       color:'#639922', items:['Cooking','Crafting & sewing','Practical biology']},
+  {cat:'Stimulation',  color:'#888780', items:['Weed ≤2×/week','Alcohol ≤1×/week','Masturbation ≤1×/week — no porn','Dumbphone (no smartphone)']},
+  {cat:'Mental health',color:'#AFA9EC', items:['Work on OCD','Limit AI use','Build sociability','Strengthen relationships & motivation']},
+  {cat:'Direction',    color:'#D85A30', items:['Plan then act','Be economical & responsible','Step by step — no shortcuts','Show up when it matters']},
+];
+
+const QUOTES = [
+  {text:"You don't rise to the level of your goals. You fall to the level of your systems.",src:"James Clear"},
+  {text:"We suffer more in imagination than in reality.",src:"Seneca"},
+  {text:"Discipline is the bridge between goals and accomplishment.",src:"Jim Rohn"},
+  {text:"You are not your thoughts. You are what you do.",src:""},
+  {text:"Every day is a vote for who you are becoming.",src:"James Clear"},
+  {text:"First forget inspiration. Habit is more dependable.",src:"Octavia Butler"},
+  {text:"An unexamined life is not worth living.",src:"Socrates"},
+  {text:"Small steps. Every day. No exceptions.",src:""},
+  {text:"Earn your rest today.",src:""},
+  {text:"The man who moves a mountain begins by carrying away small stones.",src:"Confucius"},
+  {text:"Be deliberate. Not reactive.",src:""},
+  {text:"Do the hard thing. The easy path leads nowhere.",src:""},
+];
+
+const MANTRAS = [
+  "Plan first. Then act. No shortcuts.",
+  "Show up. Even when you don't feel like it.",
+  "One step today. That's all.",
+  "Your future self is watching.",
+  "No phone. No excuses. Just work.",
+  "Fall in love with the process.",
+  "Slow is smooth. Smooth is fast.",
+  "Be where your feet are.",
+  "You already know what to do.",
+  "Less noise. More signal.",
+  "Be deliberate. Not reactive.",
+];
+
+const DAYS = ['M','T','W','T','F','S','S'];
+
+function getWeekNum(){
+  const diff = Math.floor((new Date()-START)/(7*24*3600*1000));
+  return Math.max(1,Math.min(NWEEKS,diff+1));
+}
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+function load(k,def){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;} }
+function save(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} }
+
+let checked = load('sh_checked_'+todayKey(),[]);
+let collapsed = load('sh_collapsed',{});
+let trackerWeek = getWeekNum()-1;
+let trackerState = load('sh_tracker',{});
+
+function initTracker(){
+  for(let w=0;w<NWEEKS;w++){
+    if(!trackerState[w]) trackerState[w]={};
+    CATS.forEach(c=>c.habits.forEach(h=>{
+      if(!trackerState[w][h.key]) trackerState[w][h.key]=[false,false,false,false,false,false,false];
+    }));
+  }
+}
+initTracker();
+
+function weekNum(){ return getWeekNum(); }
+
+// ── HOME ─────────────────────────────────────────────────────────────────────
+function renderHome(){
+  const wn = weekNum();
+  const dayIdx = new Date().getDate() + new Date().getMonth()*31;
+  const q = QUOTES[dayIdx % QUOTES.length];
+  const m = MANTRAS[(dayIdx+3) % MANTRAS.length];
+  const pct = checked.length ? Math.round(checked.length/DAILY_HABITS.length*100) : 0;
+
+  const habitsHtml = DAILY_HABITS.map((h,i)=>{
+    const done = checked.includes(i);
+    return `<div class="habit-row${done?' done':''}" onclick="toggleCheck(${i})">
+      <div class="check">
+        <svg width="10" height="8" viewBox="0 0 10 8"><polyline points="1,4 3.5,6.5 9,1" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="habit-name">${h.label}</div>
+      <div class="habit-cat-dot" style="background:${h.color}"></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('view-home').innerHTML = `
+    <div style="overflow-y:auto;flex:1;padding-bottom:12px">
+      <div class="home-top">
+        <div class="accent-bar-wrap">
+          <div class="accent-bar"></div>
+          <div class="title-block">
+            <div class="big">START</div>
+            <div class="big gold">HERE.</div>
+            <div class="week-line">Apr 5 → Jul 4 · 90 days</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin:0 0 24px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Apr 5 → Jul 4</span>
+          <span style="font-size:13px;color:var(--accent)">Day ${getDayNum()} of 90 · ${getDaysLeft()} left</span>
+        </div>
+        <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px">
+          <div style="height:3px;background:var(--accent);border-radius:2px;width:${getChallengePct()}%;transition:width 0.4s"></div>
+        </div>
+      </div>
+      <div class="quote-wrap">
+        <div class="quote-text">"${q.text}"</div>
+        ${q.src?`<div class="quote-src">— ${q.src}</div>`:''}
+      </div>
+      <div class="section-lbl">Today's non-negotiables</div>
+      <div class="habit-list">${habitsHtml}</div>
+      <div class="prog-wrap">
+        <div class="section-lbl">Today's progress</div>
+        <div class="prog-row">
+          <div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
+          <div class="prog-label">${pct}%</div>
+        </div>
+      </div>
+      <div class="mantra-wrap">
+        <div class="mantra-text">${m}</div>
+        <div class="mantra-lbl">Today's directive</div>
+      </div>
+    </div>`;
+}
+
+function toggleCheck(i){
+  const idx = checked.indexOf(i);
+  if(idx>-1) checked.splice(idx,1); else checked.push(i);
+  save('sh_checked_'+todayKey(), checked);
+  renderHome();
+}
+
+// ── TRACKER ──────────────────────────────────────────────────────────────────
+function catPct(w, cat){
+  let tot=0,done=0;
+  cat.habits.forEach(h=>{
+    const days=trackerState[w]?.[h.key]||[];
+    tot+=Math.min(h.freq,7);
+    done+=Math.min(days.filter(Boolean).length, Math.min(h.freq,7));
+  });
+  return tot?Math.round(done/tot*100):0;
+}
+
+function renderTracker(){
+  const wn = getWeekNum();
+  const weekNavHtml = Array.from({length:NWEEKS},(_,i)=>
+    `<button class="wbtn${i===trackerWeek?' active':''}" onclick="goWeek(${i})">W${i+1}</button>`
+  ).join('');
+
+  const catsHtml = CATS.map(cat=>{
+    const cp = catPct(trackerWeek, cat);
+    const isOpen = !collapsed[cat.key];
+    const habitsHtml = isOpen ? cat.habits.map(h=>{
+      const days = trackerState[trackerWeek]?.[h.key]||[false,false,false,false,false,false,false];
+      const boxesHtml = days.map((on,di)=>
+        `<div class="dbox${on?' on':''}" style="${on?'background:'+cat.color+';':''}" onclick="toggleDay('${cat.key}','${h.key}',${di})">${DAYS[di]}</div>`
+      ).join('');
+      const freqLbl = h.freq===7?'daily':`${h.freq}×/w`;
+      return `<div class="trk-habit-row">
+        <div class="trk-habit-label">${h.label}</div>
+        <div class="trk-freq">${freqLbl}</div>
+        <div class="days-row">${boxesHtml}</div>
+      </div>`;
+    }).join('<div class="divider"></div>') : '';
+
+    return `<div class="cat-block">
+      <div class="cat-head" onclick="toggleCat('${cat.key}')">
+        <div class="cat-dot-lg" style="background:${cat.color}"></div>
+        <div class="cat-name">${cat.label}</div>
+        <div class="cat-pct">${cp}%</div>
+      </div>
+      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${cp}%;background:${cat.color}"></div></div>
+      ${isOpen?`<div class="cat-habits">${habitsHtml}</div>`:''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('view-tracker').innerHTML = `
+    <div style="overflow-y:auto;flex:1;padding-bottom:12px">
+      <div class="tracker-top">
+        <div>
+          <div class="tracker-title">Tracker</div>
+          <div class="tracker-week">Week ${trackerWeek+1} of ${NWEEKS}</div>
+        </div>
+      </div>
+      <div class="week-nav">${weekNavHtml}</div>
+      ${catsHtml}
+    </div>`;
+}
+
+function goWeek(w){ trackerWeek=w; renderTracker(); }
+
+function toggleDay(catKey, habitKey, dayIdx){
+  if(!trackerState[trackerWeek]) trackerState[trackerWeek]={};
+  if(!trackerState[trackerWeek][habitKey]) trackerState[trackerWeek][habitKey]=[false,false,false,false,false,false,false];
+  trackerState[trackerWeek][habitKey][dayIdx] = !trackerState[trackerWeek][habitKey][dayIdx];
+  save('sh_tracker', trackerState);
+  renderTracker();
+}
+
+function toggleCat(key){ collapsed[key]=!collapsed[key]; save('sh_collapsed',collapsed); renderTracker(); }
+
+// ── GOALS ─────────────────────────────────────────────────────────────────────
+function renderGoals(){
+  const catsHtml = GOALS.map(g=>`
+    <div class="goal-cat">
+      <div class="goal-cat-head">
+        <div style="width:8px;height:8px;border-radius:50%;background:${g.color};flex-shrink:0"></div>
+        <div class="goal-cat-name">${g.cat}</div>
+      </div>
+      <div class="goal-items">${g.items.map(it=>`<div class="goal-item">${it}</div>`).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('view-goals').innerHTML = `
+    <div style="overflow-y:auto;flex:1;padding-bottom:12px">
+      <div class="goals-top">
+        <div class="goals-title">Goals</div>
+      </div>
+      ${catsHtml}
+    </div>`;
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────────────────────────
+function showView(name, tabEl){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  tabEl.classList.add('active');
+  if(name==='tracker') renderTracker();
+  if(name==='goals') renderGoals();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+renderHome();
+renderGoals();
+</script>
+</body>
+</html>
